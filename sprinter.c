@@ -13,14 +13,18 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
-// TODO: dummy method, implement getting user input
 int get_starting_words() {
-	return 0;
+	int starting_words;
+	printf("Enter starting wordcount:\n");
+	scanf("%d", &starting_words);
+	return starting_words;
 }
 
 // TODO: dummy method, implement getting user input
 void get_final_words(int starting_words) {
-	int final_words = 10; // TODO: remove dummy magic number
+	int final_words;
+	printf("Enter final wordcount:\n");
+	scanf("%d", &final_words);
 	int added_words = final_words - starting_words;
 	printf("Added %d words (%d wpm).\n", added_words, -1); // TODO: remove dummy -1 magic number
 }
