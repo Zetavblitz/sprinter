@@ -1,6 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+
+struct timer {
+	double duration;
+	double start_time;
+	double extra_time;
+	int paused;
+};
+
+
+void set_timer(struct timer* t, int minutes) {
+	(*t).duration = 60.0 * (double) minutes;
+}
 
 
 int get_starting_words() {
@@ -73,7 +87,10 @@ int main(int argc, char* argv[]) {
 	const int default_duration = 15;
 	int duration = (argc > 1) ? atoi(argv[1]) : default_duration;
 	(duration > 0) ? printf("Sprinting for %d minutes.\n", duration) : printf("Sprint duration must be greater than 0 minutes.\n");
-	
+
+	struct timer sprint_timer;
+	set_timer(&sprint_timer, duration);
+
 	int starting_words = get_starting_words();
 	
 	listen(duration);
