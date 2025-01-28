@@ -6,7 +6,7 @@
 
 struct timer {
 	double duration;
-	double start_time;
+	int start_time;
 	double extra_time;
 	int paused;
 };
@@ -14,6 +14,21 @@ struct timer {
 
 void set_timer(struct timer* t, int minutes) {
 	(*t).duration = 60.0 * (double) minutes;
+	(*t).extra_time = 0.0;
+}
+
+
+void start_timer(struct timer* t) {
+	(*t).start_time = time(NULL);
+	(*t).paused = 0;
+}
+
+
+void pause_timer(struct timer* t) {
+	(*t).paused = 1;
+	int current_time = time(NULL);
+	(*t).extra_time += difftime(current_time, (*t).start_time);
+	(*t).start_time = current_time;
 }
 
 
