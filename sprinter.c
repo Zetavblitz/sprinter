@@ -42,14 +42,29 @@ void get_final_words(int starting_words, int duration) {
 }
 
 
-void listen() {
+// TODO: Make these commands fully functional (necessitates implementation of a timer)
+void listen(int duration) {
 	char* cancel = "cancel";
-
+	char* pause = "pause";
+	char* start = "start";
+	char* stop = "stop";
+	char* time = "time";
 	char command[24];
 	if (fgets(command, 24, stdin)) {
 		command[strcspn(command, "\n")] = 0;
 		if (strcmp(cancel, command) == 0) {
 			exit(0);
+		} else if (strcmp(pause, command) == 0) {
+			printf("Haven't done time yet, so it's always paused I guess...\n");
+		} else if (strcmp(start, command) == 0) {
+			printf("Starting sprint for %d minutes now!\n", duration);
+		} else if (strcmp(stop, command) == 0) {
+			printf("Stopping sprint!\n");
+			exit(0);
+		} else if (strcmp(time, command) == 0) {
+			printf("Yeah we haven't implemented time yet...\n");
+		} else {
+			printf("Command not recognized.\n");
 		}
 	}
 }
@@ -60,7 +75,9 @@ int main(int argc, char* argv[]) {
 	(duration > 0) ? printf("Sprinting for %d minutes.\n", duration) : printf("Sprint duration must be greater than 0 minutes.\n");
 	
 	int starting_words = get_starting_words();
-	// listen();
+	
+	listen(duration);
+
 	get_final_words(starting_words, duration);
 	return 0;
 }
