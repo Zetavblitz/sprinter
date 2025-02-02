@@ -1,3 +1,3 @@
 sprinter: sprinter.c
-	gcc sprinter.c -o sprinter
+	gcc -Wall -Wextra -O3 sprinter.c -o sprinter
 
