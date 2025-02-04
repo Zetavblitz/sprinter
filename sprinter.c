@@ -14,18 +14,19 @@ int is_digits();
 typedef struct timer timer;
 
 
-const int BUFFER_SIZE = 1024;
-const int DEFAULT_DURATION = 15;
+const int BUFFER_SIZE = 1024; // byte length of default stdin buffer
+const int DEFAULT_DURATION = 15; // sprint duration in minutes
 
 
 struct timer {
 	int duration;
 	int start_time;
-	int extra_time;
-	int paused;
+	int extra_time; // this is needed because we can pause the timer.
+	int paused; // bool
 };
 
 
+// returns 1 if and only if a string contains only digits 0-9
 int is_digits(char* s) {
 	int result = 1;
 	for (int i = 0; i < ((int) strlen(s) - 1); i++) {
@@ -53,23 +54,25 @@ void start_timer(timer* t) {
 void pause_timer(timer* t) {
 	(*t).paused = 1;
 	int current_time = time(NULL);
-	(*t).extra_time += difftime(current_time, (*t).start_time);
+	(*t).extra_time += difftime(current_time, (*t).start_time); // this is necessary to preserve runtime for when we resume it
 }
 
 
 void resume_timer(timer* t) {
 	if ((*t).paused) {
 		(*t).paused = 0;
-		(*t).start_time = time(NULL);
+		(*t).start_time = time(NULL); // this works because we keep track of previous runtime with the extra_time value
 	}
 }
 
 
+// big ternary isn't so scary: paused timer means runtime = extra_time, otherwise we just calc the difference and include that extra_time we saved.
 int get_runtime(timer* t) {
 	return ((*t).paused) ? (*t).extra_time : (*t).extra_time + difftime(time(NULL), (*t).start_time);
 }
 
 
+// this is for the "time" command the user can use to see how long is left
 int get_remaining(timer* t) {
 	return int_division_rounded((*t).duration - get_runtime(t), 60);
 }
@@ -85,6 +88,7 @@ int get_starting_words() {
 		exit(1);
 	}
 
+	// make sure to sanitize input
 	if (!is_digits(buf)) {
 		printf("Not a number.\n");
 		exit(1);
@@ -95,6 +99,7 @@ int get_starting_words() {
 }
 
 
+// integer division but with weird rounding instead of truncation
 int int_division_rounded(int dividend, int divisor) {
 	int remainder = dividend % divisor;
 	int result = dividend / divisor;
@@ -111,7 +116,8 @@ void get_final_words(int starting_words, int duration) {
 	if (!fgets(buf, BUFFER_SIZE, stdin)) {
 		exit(1);
 	}
-
+	
+	// make sure to sanitize input
 	if (!is_digits(buf)) {
 		printf("Not a number,\n");
 		exit(1);
@@ -125,13 +131,15 @@ void get_final_words(int starting_words, int duration) {
 }
 
 
+// main event loop abomination for the majority of program execution
 void listen(timer* t) {
+	// set up scary async io here
 	struct pollfd fds[1];
 	int ret;
-	
 	fds[0].fd = STDIN_FILENO;
 	fds[0].events = POLLIN;
 
+	// just available commands
 	char* cancel = "cancel";
 	char* pause = "pause";
 	char* resume = "resume";
@@ -139,8 +147,9 @@ void listen(timer* t) {
 	char* time = "time";
 	char command[BUFFER_SIZE];
 
+	// we need asynchronous io to stop fgets() from blocking the timer timeout, basically
 	while (1) {
-		ret = poll(fds, 1, 500);
+		ret = poll(fds, 1, 500); // timeout for 1/2 second
 
 		if (ret == -1) {
 			perror("poll()");
@@ -149,7 +158,7 @@ void listen(timer* t) {
 			if (get_runtime(t) >= (*t).duration) {
 				break;
 			}
-		} else {
+		} else { // this is the case where we actually detect stidn input
 			if (fds[0].revents & POLLIN) {	
 				if (fgets(command, BUFFER_SIZE, stdin)) {
 					command[strcspn(command, "\n")] = 0;
@@ -179,6 +188,7 @@ void listen(timer* t) {
 int main(int argc, char* argv[]) {
 	int duration = DEFAULT_DURATION;
 
+	// optional first argument sets custom sprint duration
 	if (argc > 1) {
 		if (!is_digits(argv[1])) {
 			printf("Not a number.\n");
@@ -188,6 +198,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	// this is obvious and also not checking will cause a funny floating point exception 500ms later.
 	if (duration <= 0) {
 		printf("Cannot sprint for zero minutes.\n");
 		exit(1);
@@ -200,7 +211,7 @@ int main(int argc, char* argv[]) {
 	int starting_words = get_starting_words();
 	start_timer(&sprint_timer);
 
-	listen(&sprint_timer);
+	listen(&sprint_timer); // event loop
 	get_final_words(starting_words, duration);
 
 	return 0;
