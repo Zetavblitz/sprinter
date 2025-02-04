@@ -62,11 +62,11 @@ int get_remaining(timer* t) {
 
 int get_starting_words() {
 	int starting_words;
-	char buf[BUFFER_SIZE];
+	char buf[1024];
 
 	printf("Enter starting wordcount: ");
 	
-	if (!fgets(buf, BUFFER_SIZE, stdin)) {
+	if (!fgets(buf, 1024, stdin)) {
 		exit(1);
 	}
 
@@ -84,11 +84,11 @@ int int_division_rounded(int dividend, int divisor) {
 
 void get_final_words(int starting_words, int duration) {
 	int final_words;
-	char buf[BUFFER_SIZE];
+	char buf[1024];
 
 	printf("Time is up!\nEnter final wordcount: ");
 
-	if (!fgets(buf, BUFFER_SIZE, stdin)) {
+	if (!fgets(buf, 1024, stdin)) {
 		exit(1);
 	}
 
