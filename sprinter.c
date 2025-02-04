@@ -4,15 +4,18 @@
 #include <time.h>
 #include <unistd.h>
 #include <poll.h>
+#include <ctype.h>
 
 
 int int_division_rounded();
+int is_digits();
 
 
 typedef struct timer timer;
 
 
 const int BUFFER_SIZE = 1024;
+const int DEFAULT_DURATION = 15;
 
 
 struct timer {
@@ -21,6 +24,18 @@ struct timer {
 	int extra_time;
 	int paused;
 };
+
+
+int is_digits(char* s) {
+	int result = 1;
+	for (int i = 0; i < ((int) strlen(s) - 1); i++) {
+		if (!isdigit(s[i])) {
+			result = 0;
+			break;
+		}
+	}
+	return result;
+}
 
 
 void set_timer(timer* t, int minutes) {
@@ -70,6 +85,11 @@ int get_starting_words() {
 		exit(1);
 	}
 
+	if (!is_digits(buf)) {
+		printf("Not a number.\n");
+		exit(1);
+	}
+
 	starting_words = atoi(buf);
 	return starting_words;
 }
@@ -89,6 +109,11 @@ void get_final_words(int starting_words, int duration) {
 	printf("Time is up!\nEnter final wordcount: ");
 
 	if (!fgets(buf, BUFFER_SIZE, stdin)) {
+		exit(1);
+	}
+
+	if (!is_digits(buf)) {
+		printf("Not a number,\n");
 		exit(1);
 	}
 
@@ -152,10 +177,23 @@ void listen(timer* t) {
 
 
 int main(int argc, char* argv[]) {
-	const int default_duration = 15;
-	int duration = (argc > 1) ? atoi(argv[1]) : default_duration;
-	(duration > 0) ? printf("Sprinting for %d minutes.\n", duration) : printf("Sprint duration must be greater than 0 minutes.\n");
+	int duration = DEFAULT_DURATION;
 
+	if (argc > 1) {
+		if (!is_digits(argv[1])) {
+			printf("Not a number.\n");
+			exit(1);
+		} else {
+			duration = atoi(argv[1]);
+		}
+	}
+
+	if (duration <= 0) {
+		printf("Cannot sprint for zero minutes.\n");
+		exit(1);
+	}
+	
+	printf("Sprinting for %d minutes.\n", duration);
 	timer sprint_timer;
 	set_timer(&sprint_timer, duration);
 
