@@ -107,7 +107,7 @@ int int_division_rounded(int dividend, int divisor) {
 }
 
 
-void get_final_words(int starting_words, int duration) {
+int get_final_words(int starting_words, int duration) {
 	int final_words;
 	char buf[BUFFER_SIZE];
 
@@ -128,6 +128,16 @@ void get_final_words(int starting_words, int duration) {
 	int wpm = int_division_rounded(added_words, duration);
 
 	printf("Added %d words (%d wpm).\n", added_words, wpm);
+
+	return final_words;
+}
+
+
+// saving current wordcount to hidden file
+void save_output(int final_words) {
+	FILE *file;
+	file = fopen(".sprinter-db", "w");
+	fwrite(&final_words, sizeof(int), 1, file);
 }
 
 
@@ -212,7 +222,9 @@ int main(int argc, char* argv[]) {
 	start_timer(&sprint_timer);
 
 	listen(&sprint_timer); // event loop
-	get_final_words(starting_words, duration);
+	int final_words = get_final_words(starting_words, duration);
+
+	save_output(final_words);
 
 	return 0;
 }
